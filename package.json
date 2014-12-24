@@ -19,7 +19,8 @@
   "dependencies": {
     "byline": "4.1.1",
     "commander": "2.5.1",
-    "mkdirp": "0.5.0"
+    "mkdirp": "0.5.0",
+    "should": "^4.4.1"
   },
   "preferGlobal": true,
   "bin": {
