@@ -47,8 +47,8 @@ describe('#parser', function () {
     });
   });
 
-  it('does not take in text after beginStub', function (done) {
-    var testString = '//STUB \n hello world \n //ENDSTUB';
+  it('is case insensitive', function (done) {
+    var testString = '//stub';
     readable.push(testString);
     readable.end();
 
@@ -58,4 +58,102 @@ describe('#parser', function () {
       done();
     });
   });
+
+  it('does not take in text after beginStub', function (done) {
+    var testString = '//STUB';
+    var testString2 = 'hello world';
+    var testString3 = '//ENDSTUB';
+    readable.push(testString);
+    readable.push(testString2);
+    readable.push(testString3);
+    readable.end();
+
+    var unparsedString = testString + '\n' +
+                         testString2 + '\n' +
+                         testString3 + '\n';
+    writable.on('finish', function () {
+      assert.notStrictEqual(unparsedString, writable.result);
+      assert.strictEqual('', writable.result);
+      done();
+    });
+  });
+
+  it('does not take in text before beginStub in same line', function (done) {
+    var testString = 'hello world//STUB';
+    readable.push(testString);
+    readable.end();
+
+    writable.on('finish', function () {
+      assert.notStrictEqual(testString + '\n', writable.result);
+      assert.strictEqual('', writable.result);
+      done();
+    });
+  });
+
+  it('stubs out text directly before beginStub', function (done) {
+    var testString = 'hello world //STUB';
+    readable.push(testString);
+    readable.end();
+
+    writable.on('finish', function () {
+      assert.notStrictEqual(testString + '\n', writable.result);
+      assert.strictEqual('', writable.result);
+      done();
+    });
+  });
+
+  it('leaves in text above beginStub', function (done) {
+    var testString = 'hello world';
+    var testString2 = '//STUB';
+    readable.push(testString);
+    readable.push(testString2);
+    readable.end();
+
+    writable.on('finish', function () {
+      assert.notStrictEqual(testString + '\n' + testString2 + '\n', writable.result);
+      assert.strictEqual('hello world\n', writable.result);
+      done();
+    });
+  });
+
+  it('leaves in text below endStub', function (done) {
+    var testString = '//STUB';
+    var testString2 = '//ENDSTUB';
+    var testString3 = 'hello world';
+    readable.push(testString);
+    readable.push(testString2);
+    readable.push(testString3);
+    readable.end();
+
+    var unparsedString = testString + '\n' +
+                         testString2 + '\n' +
+                         testString3 + '\n';
+    writable.on('finish', function () {
+      assert.notStrictEqual(unparsedString, writable.result);
+      assert.strictEqual('hello world\n', writable.result);
+      done();
+    });
+  });
+
+  it('can take in two beginStubs', function (done) {
+    var testString = '//STUB';
+    var testString2 = '//ENDSTUB';
+    var testString3 = 'hello world';
+    readable.push(testString);
+    readable.push(testString);
+    readable.push(testString2);
+    readable.push(testString3);
+    readable.end();
+
+    var unparsedString = testString + '\n' +
+                         testString + '\n' +
+                         testString2 + '\n' +
+                         testString3 + '\n';
+    writable.on('finish', function () {
+      assert.notStrictEqual(unparsedString, writable.result);
+      assert.strictEqual('hello world\n', writable.result);
+      done();
+    });
+  });
+
 });
