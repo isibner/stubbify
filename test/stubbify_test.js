@@ -35,32 +35,27 @@ describe('#stubbify', function () {
     });
   });
 
-  after(function () {
-    del.sync(destinationDir + '*');
-  });
-
-  it('is different from original file', function () {
-    assert.notDeepEqual(testFileLines, stubbifiedFileLines);
+  afterEach(function () {
+    del.sync(destinationDir);
   });
 
   it('stubs correctly', function () {
+    assert.notDeepEqual(testFileLines, stubbifiedFileLines);
     assert.deepEqual(wantedFileLines, stubbifiedFileLines);
   });
 
   it('uses default regexes', function (done) {
-    var defaultRegExpTestDir = './test/fixtures/tmp2';
-    var defaultRegExpTestFile = './test/fixtures/tmp2/test/fixtures/example.js';
-    stubbify(testFile, defaultRegExpTestDir, undefined, undefined, function (err) {
+    stubbify(testFile, destinationDir, undefined, undefined, function (err) {
       assert.isNull(err);
-      var defaultRegExpTestLines = readTestFile(defaultRegExpTestFile);
+      var defaultRegExpTestLines = readTestFile(stubbifiedFile);
       assert.deepEqual(defaultRegExpTestLines, wantedFileLines);
       done();
     });
   });
 
   it('can take other regexes', function (done) {
-    var beginStub = new RegExp('^.*\<\!\-*[\\s]*STUB[\\s]*\-*\>', 'i');
-    var endStub = new RegExp('^.*\<\!\-*[\\s]*ENDSTUB[\\s]*\-*\>', 'i');
+    var beginStub = new RegExp('^.*\<\!\-{2}[\\s]*STUB[\\s]*\-{2}\>', 'i');
+    var endStub = new RegExp('^.*\<\!\-{2}[\\s]*ENDSTUB[\\s]*\-{2}\>', 'i');
     var htmlTestFile = './test/fixtures/example.html';
     var wantedHtmlFile = './test/fixtures/stubbified.html';
     var stubbifiedHtmlTestFile = './test/fixtures/tmp/test/fixtures/example.html';
